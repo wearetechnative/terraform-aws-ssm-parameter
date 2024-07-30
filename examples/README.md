@@ -1,6 +1,5 @@
-Create one or more examples here...
+# Example configuration
 
-## Example configuration
 ```hcl
 module "ssm_parameter" {
   source = "../../technative_modules/ssm_parameter"
@@ -33,4 +32,28 @@ module "ssm_parameter" {
     
 }
 
+```
+
+## Example iteration through outputs
+
+When you need to iterate through the output outside of module in order to reference one or more output variables.
+
+```hcl
+locals {
+  # This logic will flatten and loop through all the ssm parameter details and make them into a concise local variable in which can be used to
+  ssm_parameter_secrets = { for key, value in flatten([for k, val in module.ssm_parameter_secrets : [for v in val.ssm_parameters_secret : {
+    ssm_name  = k
+    ssm_path  = v.name
+    ssm_value = v.value
+    ssm_arn   = v.arn
+  }]]) : "${value.ssm_name}" => value }
+
+  ssm_parameter_variables = { for key, value in flatten([for k, val in module.ssm_parameter_variables : [for v in val.ssm_parameters : {
+    ssm_name  = k
+    ssm_path  = v.name
+    ssm_value = v.value
+    ssm_arn   = v.arn
+  }]]) : "${value.ssm_name}" => value }
+
+}
 ```
